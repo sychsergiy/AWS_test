@@ -1,4 +1,4 @@
 venv
 .idea
 package
-lambda.zip
+*.zip
