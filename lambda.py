@@ -25,19 +25,19 @@ def handler(event, context):
     This function fetches content from MySQL RDS instance
     """
 
-    item_count = 0
-
+    updated_file_text = "some text"
     with conn.cursor() as cur:
-        cur.execute("create table Employee ( EmpID  int NOT NULL, Name varchar(255) NOT NULL, PRIMARY KEY (EmpID))")
-        cur.execute('insert into Employee (EmpID, Name) values(1, "Joe")')
-        cur.execute('insert into Employee (EmpID, Name) values(2, "Bob")')
-        cur.execute('insert into Employee (EmpID, Name) values(3, "Mary")')
+        create_record_table_query = """
+        create table if not exists Record(
+            id  int NOT NULL AUTO_INCREMENT,
+            text varchar(255) NOT NULL,
+            date_created datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id)
+        )
+        """
+        cur.execute(create_record_table_query)
+        cur.execute('insert into Record (text) values("%(text)s")', {"text": updated_file_text})
         conn.commit()
-        cur.execute("select * from Employee")
-        for row in cur:
-            item_count += 1
-            logger.info(row)
-            # print(row)
     conn.commit()
 
-    return "Added %d items from RDS MySQL table" % (item_count)
+    return "Inserted record with text: %s" % updated_file_text
