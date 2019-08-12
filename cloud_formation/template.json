@@ -1,0 +1,148 @@
+{
+  "Parameters": {},
+  "Resources": {
+    "IamRoleLambda": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "CloudwatchLogs",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:GetLogEvents",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    "arn:aws:logs:*:*:*"
+                  ],
+                  "Effect": "Allow"
+                }
+              ]
+            }
+          }
+        ],
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "LambdaInvokePermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "Principal": "sns.amazonaws.com",
+        "SourceArn": {
+          "Ref": "BucketUpdatesTopic"
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "LambdaHandler",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "SourceBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "NotificationConfiguration": {
+          "TopicConfigurations": [
+            {
+              "Event": "s3:ObjectCreated:*",
+              "Topic": {
+                "Ref": "BucketUpdatesTopic"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "BucketUpdatesTopicSubscription": {
+      "Type": "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {
+          "Fn::GetAtt": [
+            "LambdaHandler",
+            "Arn"
+          ]
+        },
+        "Protocol": "lambda",
+        "TopicArn": {
+          "Ref": "BucketUpdatesTopic"
+        }
+      }
+    },
+    "BucketUpdatesTopicPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowBucketToPushNotificationEffect",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "s3.amazonaws.com"
+              },
+              "Action": "sns:Publish",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Topics": [
+          {
+            "Ref": "BucketUpdatesTopic"
+          }
+        ]
+      }
+    },
+    "LambdaHandler": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Handler": "index.handler",
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": [
+              "",
+              [
+                "def handler(event, context):",
+                " print('trigger works fine')"
+              ]
+            ]
+          }
+        },
+        "Description": "triggered by S3 update event",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambda",
+            "Arn"
+          ]
+        },
+        "Runtime": "python2.7",
+        "Timeout": 3
+      }
+    },
+    "BucketUpdatesTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {}
+    }
+  }
+}
