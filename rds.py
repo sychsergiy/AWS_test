@@ -1,18 +1,17 @@
 import logging
 import pymysql
 
+from config import Config
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-rds_host = "mysqlforlambdatest.ct0xb8em3m2k.eu-central-1.rds.amazonaws.com"
-username = "postgres"
-password = "postgres"
-name = "awstest"
 
 
 def init_rds():
     try:
-        connection = pymysql.connect(rds_host, user=username, passwd=password, db=name, connect_timeout=2)
+        connection = pymysql.connect(
+            Config.DB_HOST, user=Config.DB_USER, passwd=Config.DB_PASSWORD, db=Config.DB_NAME, connect_timeout=2
+        )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
         create_record_table(connection)
         return connection

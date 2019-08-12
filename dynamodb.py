@@ -3,15 +3,16 @@ import uuid
 import boto3
 import logging
 
+from config import Config
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
 def init_dynamo_db_table():
     try:
-        table_name = "LambdaExecutionState"
         dynamo_db = boto3.resource("dynamodb")
-        table = dynamo_db.Table(table_name)
+        table = dynamo_db.Table(Config.DYNAMO_DB_TABLE_NAME)
         return table
     except Exception as e:
         logger.error("ERROR: Failed to init DynamoDB")
