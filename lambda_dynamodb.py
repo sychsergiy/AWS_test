@@ -45,10 +45,6 @@ def handler(event, context):
     dynamo_db_table = init_dynamo_db_table()
     record = create_record_data("test_lambda", LambdaExecutionStatuses.SUCCESS)
     dynamo_db_table.put_item(Item=record)
-
-    print(record['uuid'])
-
-    response = update_record_status(
+    update_record_status(
         dynamo_db_table, LambdaExecutionStatuses.FAILED, "test_lambda", record['uuid']
     )
-    print(response)

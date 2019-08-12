@@ -1,6 +1,7 @@
 import sys
 import logging
 import pymysql
+import boto3
 
 rds_host = "mysqlforlambdatest.ct0xb8em3m2k.eu-central-1.rds.amazonaws.com"
 username = "postgres"
@@ -22,8 +23,23 @@ def init_rds():
         sys.exit()
 
 
+def init_sns():
+    sns = boto3.client('sns')
+    return sns
+
+
+def send_message_to_email_topic(sns):
+    response = sns.publish(
+        TopicArn='arn:aws:sns:eu-central-1:197928842860:email_lambda_finished',
+        Message='Hello World!',
+    )
+    return response
+
+
 def handler(event, context):
     conn = init_rds()
+    sns = init_sns()
+
     source_s3 = event['Records'][0]['s3']
     source_bucket_name = source_s3['bucket']['name']
     updated_file_name = source_s3['object']['key']
@@ -48,4 +64,8 @@ def handler(event, context):
         for row in cur:
             logger.info(row)
     conn.commit()
+
+    response = send_message_to_email_topic(sns)
+    logger.info(response)
+
     return "Inserted record with text: %s" % updated_file_text
