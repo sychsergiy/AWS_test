@@ -1,5 +1,24 @@
 {
-  "Parameters": {},
+  "Parameters": {
+    "RDSDbName": {
+      "Description": "Database name",
+      "Default": "awstest",
+      "Type": "String"
+    },
+    "RDSUsername": {
+      "Description": "Database root username",
+      "Default": "admin",
+      "Type": "String"
+    },
+    "RDSPassword": {
+      "Description": "Database rot password",
+      "Default": "DB_ADMIN_$",
+      "Type": "String"
+    },
+    "PSubnetIds": {
+      "Description": "Subnet IDs",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+  },
   "Resources": {
     "IamRoleLambda": {
       "Type": "AWS::IAM::Role",
@@ -40,7 +59,10 @@
               }
             }
           ]
-        }
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+        ]
       }
     },
     "LambdaInvokePermission": {
@@ -137,12 +159,101 @@
           ]
         },
         "Runtime": "python2.7",
-        "Timeout": 3
+        "Timeout": 3,
+        "VpcConfig": {
+          "SubnetIds": {
+            "Ref": "PSubnetIds"
+          },
+          "SecurityGroupIds": [
+            {
+              "Fn::GetAtt": "LambdaHandlerSecurityGroup.GroupId"
+            }
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "RDSInstance",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_NAME": {
+              "Ref": "RDSDbName"
+            },
+            "DB_USER": {
+              "Ref": "RDSUsername"
+            },
+            "DB_PASSWORD": {
+              "Ref": "RDSPassword"
+            }
+          }
+        }
       }
     },
     "BucketUpdatesTopic": {
       "Type": "AWS::SNS::Topic",
       "Properties": {}
+    },
+    "RDSInstance": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "VPCSecurityGroups": [
+          {
+            "Fn::GetAtt": "RDSSecurityGroup.GroupId"
+          }
+        ],
+        "DBSubnetGroupName": {
+          "Ref": "RDSSubnetGroup"
+        },
+        "AllocatedStorage": "5",
+        "DBInstanceClass": "db.t2.micro",
+        "Engine": "MySQL",
+        "MasterUsername": {
+          "Ref": "RDSUsername"
+        },
+        "MasterUserPassword": {
+          "Ref": "RDSPassword"
+        },
+        "DBName": {
+          "Ref": "RDSDbName"
+        }
+      },
+      "DeletionPolicy": "Delete"
+    },
+    "RDSSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Ingress for RDS Instance",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "3306",
+            "ToPort": "3306",
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [
+                "LambdaHandlerSecurityGroup",
+                "GroupId"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "LambdaHandlerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "SecurityGroup for Lambda"
+      }
+    },
+    "RDSSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "RDS Subnet Group",
+        "SubnetIds": {
+          "Ref": "PSubnetIds"
+        }
+      }
     }
   }
 }
