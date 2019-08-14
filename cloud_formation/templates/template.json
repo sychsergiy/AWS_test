@@ -1,0 +1,356 @@
+{
+  "Parameters": {
+    "RDSDbName": {
+      "Description": "Database name",
+      "Default": "awstest",
+      "Type": "String"
+    },
+    "RDSUsername": {
+      "Description": "Database root username",
+      "Default": "admin",
+      "Type": "String"
+    },
+    "RDSPassword": {
+      "Description": "Database rot password",
+      "Default": "DB_ADMIN_$",
+      "Type": "String"
+    },
+    "PSubnetIds": {
+      "Description": "Subnet IDs",
+      "Default": "subnet-23e73349,subnet-568e8d2b,subnet-568e8d2b",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "SourceCodeS3Bucket": {
+      "Type": "String",
+      "Default": "aws.cloudformation.test",
+      "Description": "S3 bucket id which contains source lambda code"
+    },
+    "SourceCodeS3BucketKey": {
+      "Type": "String",
+      "Default": "function.zip",
+      "Description": "Path to code in S3 bucket"
+    }
+  },
+  "Resources": {
+    "IamRoleLambda": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "CloudwatchLogs",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:GetLogEvents",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    "arn:aws:logs:*:*:*"
+                  ],
+                  "Effect": "Allow"
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "DynamoDbReadWritePolicy",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:BatchGetItem",
+                    "dynamodb:BatchWriteItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:GetItem",
+                    "dynamodb:UpdateItem"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "DynamoDBTable",
+                      "Arn"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "SNSPublish",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "sns:Publish"
+                  ],
+                  "Resource": [
+                    {
+                      "Ref": "EmailsSNSTopic"
+                    }
+                  ],
+                  "Effect": "Allow"
+                }
+              ]
+            }
+          }
+        ],
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+        ]
+      }
+    },
+    "LambdaInvokePermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "Principal": "sns.amazonaws.com",
+        "SourceArn": {
+          "Ref": "BucketUpdatesTopic"
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "LambdaHandler",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "SourceBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "NotificationConfiguration": {
+          "TopicConfigurations": [
+            {
+              "Event": "s3:ObjectCreated:*",
+              "Topic": {
+                "Ref": "BucketUpdatesTopic"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "BucketUpdatesTopicSubscription": {
+      "Type": "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {
+          "Fn::GetAtt": [
+            "LambdaHandler",
+            "Arn"
+          ]
+        },
+        "Protocol": "lambda",
+        "TopicArn": {
+          "Ref": "BucketUpdatesTopic"
+        }
+      }
+    },
+    "BucketUpdatesTopicPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowBucketToPushNotificationEffect",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "s3.amazonaws.com"
+              },
+              "Action": "sns:Publish",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Topics": [
+          {
+            "Ref": "BucketUpdatesTopic"
+          }
+        ]
+      }
+    },
+    "LambdaHandler": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Handler": "lambda.handler",
+        "Code": {
+          "S3Bucket": {
+            "Ref": "SourceCodeS3Bucket"
+          },
+          "S3Key": {
+            "Ref": "SourceCodeS3BucketKey"
+          }
+        },
+        "Description": "triggered by S3 update event",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambda",
+            "Arn"
+          ]
+        },
+        "Runtime": "python2.7",
+        "Timeout": 3,
+        "VpcConfig": {
+          "SubnetIds": {
+            "Ref": "PSubnetIds"
+          },
+          "SecurityGroupIds": [
+            {
+              "Fn::GetAtt": "LambdaHandlerSecurityGroup.GroupId"
+            }
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "SNS_TOPIC_ARN": {
+              "Ref": "EmailsSNSTopic"
+            },
+            "DYNAMO_DB_TABLE_NAME": {
+              "Ref": "DynamoDBTable"
+            },
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "RDSInstance",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_NAME": {
+              "Ref": "RDSDbName"
+            },
+            "DB_USER": {
+              "Ref": "RDSUsername"
+            },
+            "DB_PASSWORD": {
+              "Ref": "RDSPassword"
+            }
+          }
+        }
+      }
+    },
+    "BucketUpdatesTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {}
+    },
+    "RDSInstance": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "VPCSecurityGroups": [
+          {
+            "Fn::GetAtt": "RDSSecurityGroup.GroupId"
+          }
+        ],
+        "DBSubnetGroupName": {
+          "Ref": "RDSSubnetGroup"
+        },
+        "AllocatedStorage": "5",
+        "DBInstanceClass": "db.t2.micro",
+        "Engine": "MySQL",
+        "MasterUsername": {
+          "Ref": "RDSUsername"
+        },
+        "MasterUserPassword": {
+          "Ref": "RDSPassword"
+        },
+        "DBName": {
+          "Ref": "RDSDbName"
+        }
+      },
+      "DeletionPolicy": "Delete"
+    },
+    "RDSSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Ingress for RDS Instance",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "3306",
+            "ToPort": "3306",
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [
+                "LambdaHandlerSecurityGroup",
+                "GroupId"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "LambdaHandlerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "SecurityGroup for Lambda"
+      }
+    },
+    "RDSSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "RDS Subnet Group",
+        "SubnetIds": {
+          "Ref": "PSubnetIds"
+        }
+      }
+    },
+    "DynamoDBTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "uuid",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "lambda_name",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "uuid",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "lambda_name",
+            "KeyType": "RANGE"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 2,
+          "WriteCapacityUnits": 2
+        }
+      }
+    },
+    "EmailsSNSTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "Subscription": [
+          {
+            "Endpoint": "Serhii_Sych@epam.com",
+            "Protocol": "email"
+          }
+        ]
+      }
+    }
+  }
+}

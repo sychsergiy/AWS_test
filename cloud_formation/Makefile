@@ -21,6 +21,8 @@ zip_libs:
 
 zip_lambda:
 	zip -g ${OUTPUT_ZIP_FILENAME} ${lambda_file}
+	zip -r9 ${ROOT}/${OUTPUT_ZIP_FILENAME} ./services && \
+	cd ${ROOT}
 
 cleanup:
 	rm -rf ${DEPENDENCIES_DIR}
@@ -30,4 +32,4 @@ push_lambda:
 
 create_stack:
 	aws cloudformation create-stack --stack-name ${stack_name} \
-	--template-body file://./${template} --capabilities CAPABILITY_IAM
+	--template-body file://./templates/${template} --capabilities CAPABILITY_IAM

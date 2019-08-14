@@ -1,37 +1,51 @@
-import boto3
 import logging
-import os
+
+from services.dynamodb import (
+    init_dynamo_db_table,
+    create_lambda_status_record,
+    update_record_status,
+    LambdaExecutionStatuses,
+)
+from services.rds import init_rds, insert_record_to_rds
+from services.sns import send_message_to_email_topic
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def get_env_var(var_name, required=True):
-    value = os.environ.get(var_name)
-    if required:
-        if not value:
-            raise Exception("Env var: {} is required".format(var_name))
-    return value
-
-
-class Config(object):
-    SNS_TOPIC_ARN = get_env_var("SNS_TOPIC_ARN")
-
-
-def send_message_to_email_topic(message):
-    try:
-        sns = boto3.client('sns')
-        response = sns.publish(
-            TopicArn=Config.SNS_TOPIC_ARN,
-            Message=message,
-        )
-        logger.info(response)
-        return True
-    except Exception as e:
-        logger.error("ERROR: Failed to send email message")
-        logger.error(e)
-        return False
-
-
 def handler(event, context):
-    return send_message_to_email_topic("HELLO WORLD")
+    lambda_name = "aws_test"
+    dynamo_db_table = init_dynamo_db_table()
+    if not dynamo_db_table:
+        return "Failed to connect to DynamoDB"
+    _, record_id = create_lambda_status_record(
+        dynamo_db_table, lambda_name, LambdaExecutionStatuses.INITIALIZATION
+    )
+
+    rds_connection = init_rds()
+    if not rds_connection:
+        create_lambda_status_record(dynamo_db_table, lambda_name, LambdaExecutionStatuses.FAILED_TO_INIT)
+        return "Failed to connect to RDS"
+
+    update_record_status(
+        dynamo_db_table, LambdaExecutionStatuses.IN_PROGRESS, lambda_name, record_id
+    )
+
+    source_s3 = event['Records'][0]['s3']
+    source_bucket_name, updated_file_name = source_s3['bucket']['name'], source_s3['object']['key']
+
+    with rds_connection.cursor() as cursor:
+        insert_record_to_rds(cursor, source_bucket_name, updated_file_name)
+        rds_connection.commit()
+
+    sent_successfully = send_message_to_email_topic("Hello World")
+    if sent_successfully:
+        update_record_status(
+            dynamo_db_table, LambdaExecutionStatuses.SUCCESS, lambda_name, record_id
+        )
+    else:
+        update_record_status(
+            dynamo_db_table, LambdaExecutionStatuses.FAILED, lambda_name, record_id
+        )
+
+    return "Inserted record with updated_file_name: %s" % updated_file_name
