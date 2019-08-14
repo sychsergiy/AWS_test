@@ -1,5 +1,7 @@
+import time
+import uuid
+import boto3
 import logging
-import pymysql
 import os
 
 logger = logging.getLogger()
@@ -15,52 +17,60 @@ def get_env_var(var_name, required=True):
 
 
 class Config(object):
-    DB_NAME = get_env_var("DB_NAME")
-    DB_USER = get_env_var("DB_USER")
-    DB_PASSWORD = get_env_var("DB_PASSWORD")
-    DB_HOST = get_env_var("DB_HOST")
+    DYNAMO_DB_TABLE_NAME = get_env_var("DYNAMO_DB_TABLE_NAME")
 
 
-def init_rds():
+def init_dynamo_db_table():
     try:
-        connection = pymysql.connect(
-            Config.DB_HOST, user=Config.DB_USER, passwd=Config.DB_PASSWORD, db=Config.DB_NAME, connect_timeout=2
-        )
-        logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
-        create_record_table(connection)
-        return connection
-    except pymysql.MySQLError as e:
-        logger.error("ERROR: Unexpected error: Could not connect to MySQL instance.")
+        dynamo_db = boto3.resource("dynamodb")
+        table = dynamo_db.Table(Config.DYNAMO_DB_TABLE_NAME)
+        return table
+    except Exception as e:
+        logger.error("ERROR: Failed to init DynamoDB")
         logger.error(e)
         return None
 
 
-def create_record_table(connection):
-    with connection.cursor() as cursor:
-        create_record_table_query = """
-            create table if not exists Record(
-                id  int NOT NULL AUTO_INCREMENT,
-                bucket_name varchar (255) NOT NULL,
-                updated_file_name varchar (255) NOT NULL ,
-                date_created datetime DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (id)
-            )
-            """
-        cursor.execute(create_record_table_query)
-    connection.commit()
+class LambdaExecutionStatuses(object):
+    INITIALIZATION = "INITIALIZATION"
+    FAILED_TO_INIT = "FAILED_TO_INIT"
+    IN_PROGRESS = "IN_PROGRESS"
+    FAILED = "FAILED"
+    SUCCESS = "SUCCESS"
 
 
-def insert_record_to_rds(cursor, bucket_name, updated_file_name):
-    cursor.execute(
-        'insert into Record (bucket_name, updated_file_name) values("%(bucket_name)s", "%(updated_file_name)s")',
-        {"bucket_name": bucket_name, "updated_file_name": updated_file_name}
+def create_lambda_status_record(table, lambda_name, status):
+    record_id = str(uuid.uuid4())
+
+    now = int(time.time())
+    data = {
+        "lambda_name": lambda_name,
+        "date_started": now,
+        "execution_status": status,
+        "uuid": record_id,
+    }
+    return table.put_item(Item=data), record_id
+
+
+def update_record_status(table, status, lambda_name, record_id):
+    response = table.update_item(
+        Key={
+            'lambda_name': lambda_name,
+            'uuid': record_id,
+        },
+        UpdateExpression="set execution_status = :r",
+        ExpressionAttributeValues={':r': status},
+        ReturnValues="UPDATED_NEW"
     )
+    return response
 
 
 def handler(event, context):
-    connection = init_rds()
-    create_record_table(connection)
-    with connection.cursor()as cursor:
-        insert_record_to_rds(cursor, "test", "test")
-    connection.commit()
+    table = init_dynamo_db_table()
+
+    response, record_id = create_lambda_status_record(table, "test", LambdaExecutionStatuses.IN_PROGRESS)
+    print(response)
+    print(record_id)
+    response = update_record_status(table, LambdaExecutionStatuses.SUCCESS, "test", record_id)
+    print(response)
     return "success"
