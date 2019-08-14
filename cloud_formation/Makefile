@@ -3,7 +3,9 @@ OUTPUT_ZIP_FILENAME = function.zip
 DEPENDENCIES_DIR = package
 ROOT = ${PWD}
 
-build: install_libs zip_libs zip_lambda cleanup
+S3_BUCKET = aws.cloudformation.test
+
+build: install_libs zip_libs zip_lambda cleanup push_lambda
 
 install_libs:
 	pip2 install --target=./package pymysql
@@ -18,3 +20,10 @@ zip_lambda:
 
 cleanup:
 	rm -rf ${DEPENDENCIES_DIR}
+
+push_lambda:
+	aws s3 cp ${ROOT}/${OUTPUT_ZIP_FILENAME} s3://${S3_Bucket}/${OUTPUT_ZIP_FILENAME}
+
+create_stack:
+	aws cloudformation create-stack --stack-name ${stack_name} \
+	--template-body file://./template.json --capabilities CAPABILITY_IAM

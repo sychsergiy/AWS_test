@@ -17,6 +17,7 @@
     },
     "PSubnetIds": {
       "Description": "Subnet IDs",
+      "Default": "subnet-23e73349,subnet-568e8d2b,subnet-568e8d2b",
       "Type": "List<AWS::EC2::Subnet::Id>"
     },
     "SourceCodeS3Bucket": {
