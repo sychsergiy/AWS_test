@@ -18,6 +18,17 @@
     "PSubnetIds": {
       "Description": "Subnet IDs",
       "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "SourceCodeS3Bucket": {
+      "Type": "String",
+      "Default": "aws.cloudformation.test",
+      "Description": "S3 bucket id which contains source lambda code"
+    },
+    "SourceCodeS3BucketKey": {
+      "Type": "String",
+      "Default": "function.zip",
+      "Description": "Path to code in S3 bucket"
+    }
   },
   "Resources": {
     "IamRoleLambda": {
@@ -138,16 +149,13 @@
     "LambdaHandler": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
-        "Handler": "index.handler",
+        "Handler": "lambda.handler",
         "Code": {
-          "ZipFile": {
-            "Fn::Join": [
-              "",
-              [
-                "def handler(event, context):",
-                " print('trigger works fine')"
-              ]
-            ]
+          "S3Bucket": {
+            "Ref": "SourceCodeS3Bucket"
+          },
+          "S3Key": {
+            "Ref": "SourceCodeS3BucketKey"
           }
         },
         "Description": "triggered by S3 update event",
