@@ -15,6 +15,6 @@ class Config(object):
     DB_PASSWORD = get_env_var("DB_PASSWORD")
     DB_HOST = get_env_var("DB_HOST")
 
-    SNS_TOPIC_ARC = get_env_var("SNS_TOPIC_ARN")
+    SNS_TOPIC_ARN = get_env_var("SNS_TOPIC_ARN")
 
     DYNAMO_DB_TABLE_NAME = get_env_var("DYNAMO_DB_TABLE_NAME")

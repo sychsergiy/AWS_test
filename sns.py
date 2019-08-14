@@ -11,7 +11,7 @@ def send_message_to_email_topic(message):
     try:
         sns = boto3.client('sns')
         response = sns.publish(
-            TopicArn=Config.SNS_TOPIC_ARC,
+            TopicArn=Config.SNS_TOPIC_ARN,
             Message=message,
         )
         logger.info(response)

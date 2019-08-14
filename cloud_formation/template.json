@@ -54,6 +54,30 @@
                 }
               ]
             }
+          },
+          {
+            "PolicyName": "DynamoDbReadWritePolicy",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:BatchGetItem",
+                    "dynamodb:BatchWriteItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:GetItem",
+                    "dynamodb:UpdateItem"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "DynamoDBTable",
+                      "Arn"
+                    ]
+                  }
+                }
+              ]
+            }
           }
         ],
         "AssumeRolePolicyDocument": {
@@ -180,6 +204,9 @@
         },
         "Environment": {
           "Variables": {
+            "DYNAMO_DB_TABLE_NAME": {
+              "Ref": "DynamoDBTable"
+            },
             "DB_HOST": {
               "Fn::GetAtt": [
                 "RDSInstance",
@@ -260,6 +287,35 @@
         "DBSubnetGroupDescription": "RDS Subnet Group",
         "SubnetIds": {
           "Ref": "PSubnetIds"
+        }
+      }
+    },
+    "DynamoDBTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "uuid",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "lambda_name",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "uuid",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "lambda_name",
+            "KeyType": "RANGE"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 2,
+          "WriteCapacityUnits": 2
         }
       }
     }
