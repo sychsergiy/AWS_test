@@ -14,6 +14,7 @@ class Config(object):
     DB_USER = get_env_var("DB_USER")
     DB_PASSWORD = get_env_var("DB_PASSWORD")
     DB_HOST = get_env_var("DB_HOST")
+    DB_PORT = get_env_var("DB_PORT")
 
     SNS_TOPIC_ARN = get_env_var("SNS_TOPIC_ARN")
 

@@ -10,7 +10,9 @@ logger.setLevel(logging.INFO)
 def init_rds():
     try:
         connection = pymysql.connect(
-            Config.DB_HOST, user=Config.DB_USER, passwd=Config.DB_PASSWORD, db=Config.DB_NAME, connect_timeout=2
+            Config.DB_HOST, port=Config.DB_PORT,
+            user=Config.DB_USER, passwd=Config.DB_PASSWORD,
+            db=Config.DB_NAME, connect_timeout=2
         )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
         create_record_table(connection)
