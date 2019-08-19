@@ -12,9 +12,62 @@
     }
   },
   "Resources": {
+    "LambdaHandler": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Handler": "lambda.handler",
+        "Code": {
+          "S3Bucket": {
+            "Ref": "SourceCodeS3Bucket"
+          },
+          "S3Key": {
+            "Ref": "SourceCodeS3BucketKey"
+          }
+        },
+        "Description": "triggered by S3 update event",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambda",
+            "Arn"
+          ]
+        },
+        "Runtime": "python2.7",
+        "Timeout": 3,
+        "Environment": {
+          "Variables": {
+            "SNS_TOPIC_ARN": "",
+            "DYNAMO_DB_TABLE_NAME": {
+              "Ref": "DynamoDBTable"
+            },
+            "DB_HOST": "",
+            "DB_PORT": "",
+            "DB_NAME": "",
+            "DB_USER": "",
+            "DB_PASSWORD": ""
+          }
+        }
+      }
+    },
     "IamRoleLambda": {
       "Type": "AWS::IAM::Role",
       "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
         "Path": "/",
         "Policies": [
           {
@@ -50,59 +103,12 @@
                     "dynamodb:GetItem",
                     "dynamodb:UpdateItem"
                   ],
-                  "Resource": {
-                    "Fn::GetAtt": [
-                      "DynamoDBTable",
-                      "Arn"
-                    ]
-                  }
+                  "Resource": "arn:aws:dynamodb:*:*:*"
                 }
               ]
             }
           }
-        ],
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole"
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com"
-                ]
-              }
-            }
-          ]
-        },
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
         ]
-      }
-    },
-    "LambdaHandler": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Handler": "lambda.handler",
-        "Code": {
-          "S3Bucket": {
-            "Ref": "SourceCodeS3Bucket"
-          },
-          "S3Key": {
-            "Ref": "SourceCodeS3BucketKey"
-          }
-        },
-        "Description": "triggered by S3 update event",
-        "MemorySize": 128,
-        "Role": {
-          "Fn::GetAtt": [
-            "IamRoleLambda",
-            "Arn"
-          ]
-        },
-        "Runtime": "python2.7",
-        "Timeout": 3
       }
     },
     "DynamoDBTable": {

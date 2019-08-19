@@ -256,7 +256,6 @@
     "DynamoDBTable": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
-        "TableName": "DynamoDBTable",
         "AttributeDefinitions": [
           {
             "AttributeName": "uuid",
