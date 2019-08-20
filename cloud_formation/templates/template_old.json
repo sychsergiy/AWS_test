@@ -7,7 +7,7 @@
     },
     "RDSUsername": {
       "Description": "Database root username",
-      "Default": "admin",
+      "Default": "root",
       "Type": "String"
     },
     "RDSPassword": {
@@ -265,7 +265,7 @@
         },
         "AllocatedStorage": "5",
         "DBInstanceClass": "db.t2.micro",
-        "Engine": "MySQL",
+        "Engine": "postgres",
         "MasterUsername": {
           "Ref": "RDSUsername"
         },

@@ -16,11 +16,13 @@ logger.setLevel(logging.INFO)
 def handler(event, context):
     lambda_name = "aws_test"
     dynamo_db_table = init_dynamo_db_table()
+    logger.info("started")
     if not dynamo_db_table:
         return "Failed to connect to DynamoDB"
     _, record_id = create_lambda_status_record(
         dynamo_db_table, lambda_name, LambdaExecutionStatuses.INITIALIZATION
     )
+    logger.info("DynamoDB record created")
 
     rds_connection = init_rds()
     if not rds_connection:
@@ -30,6 +32,7 @@ def handler(event, context):
     update_record_status(
         dynamo_db_table, LambdaExecutionStatuses.IN_PROGRESS, lambda_name, record_id
     )
+    logger.info("DynamoDB record updated")
 
     source_s3 = event['Records'][0]['s3']
     source_bucket_name, updated_file_name = source_s3['bucket']['name'], source_s3['object']['key']
@@ -38,7 +41,9 @@ def handler(event, context):
         insert_record_to_rds(cursor, source_bucket_name, updated_file_name)
         rds_connection.commit()
 
+    logger.info("SQL query executed")
     sent_successfully = send_message_to_email_topic("Hello World")
+    logger.info("Send email message executed")
     if sent_successfully:
         update_record_status(
             dynamo_db_table, LambdaExecutionStatuses.SUCCESS, lambda_name, record_id

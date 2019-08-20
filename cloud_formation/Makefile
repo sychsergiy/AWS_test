@@ -12,7 +12,7 @@ push: build push_lambda
 build: install_libs zip_libs zip_lambda cleanup
 
 install_libs:
-	pip2 install --target=./package pymysql
+	pip2 install --target=./package pg8000
 
 zip_libs:
 	cd ${DEPENDENCIES_DIR} && \
