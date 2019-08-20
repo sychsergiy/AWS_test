@@ -1,5 +1,25 @@
 {
   "Parameters": {
+    "RDSDbName": {
+      "Description": "Database name",
+      "Default": "awstest",
+      "Type": "String"
+    },
+    "RDSUsername": {
+      "Description": "Database root username",
+      "Default": "root",
+      "Type": "String"
+    },
+    "RDSPassword": {
+      "Description": "Database rot password",
+      "Default": "DB_ADMIN_$",
+      "Type": "String"
+    },
+    "PSubnetIds": {
+      "Description": "Subnet IDs",
+      "Default": "subnet-23e73349,subnet-568e8d2b,subnet-c8e7f185",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
     "SourceCodeS3Bucket": {
       "Type": "String",
       "Default": "aws.cloudformation.test",
@@ -69,7 +89,10 @@
               }
             }
           ]
-        }
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+        ]
       }
     },
     "LambdaHandler": {
@@ -93,7 +116,35 @@
           ]
         },
         "Runtime": "python2.7",
-        "Timeout": 3
+        "Timeout": 3,
+        "VpcConfig": {
+          "SubnetIds": {
+            "Ref": "PSubnetIds"
+          },
+          "SecurityGroupIds": [
+            {
+              "Fn::GetAtt": "LambdaHandlerSecurityGroup.GroupId"
+            }
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "SNS_TOPIC_ARN": {
+              "Ref": "EmailsSNSTopic"
+            },
+            "DYNAMO_DB_TABLE_NAME": "test",
+            "DB_HOST": "test",
+            "DB_NAME": {
+              "Ref": "RDSDbName"
+            },
+            "DB_USER": {
+              "Ref": "RDSUsername"
+            },
+            "DB_PASSWORD": {
+              "Ref": "RDSPassword"
+            }
+          }
+        }
       }
     },
     "EmailsSNSTopic": {
@@ -103,6 +154,59 @@
           {
             "Endpoint": "Serhii_Sych@epam.com",
             "Protocol": "email"
+          }
+        ]
+      }
+    },
+    "LambdaHandlerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "SecurityGroup for Lambda"
+      }
+    },
+    "SNSEndpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "PrivateDnsEnabled": true,
+        "SecurityGroupIds": [
+          {
+            "Fn::GetAtt": "SNSEndpointSecurityGroup.GroupId"
+          }
+        ],
+        "ServiceName": {
+          "Fn::Join": [
+            "",
+            [
+              "com.amazonaws.",
+              {
+                "Ref": "AWS::Region"
+              },
+              ".sns"
+            ]
+          ]
+        },
+        "SubnetIds": {
+          "Ref": "PSubnetIds"
+        },
+        "VpcEndpointType": "Interface",
+        "VpcId": "vpc-5cbd5136"
+      }
+    },
+    "SNSEndpointSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "SecurityGroup for SNS endpoint",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 0,
+            "ToPort": 65535,
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [
+                "LambdaHandlerSecurityGroup",
+                "GroupId"
+              ]
+            }
           }
         ]
       }
