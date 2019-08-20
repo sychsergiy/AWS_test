@@ -7,13 +7,18 @@
     },
     "RDSUsername": {
       "Description": "Database root username",
-      "Default": "admin",
+      "Default": "root",
       "Type": "String"
     },
     "RDSPassword": {
       "Description": "Database rot password",
       "Default": "DB_ADMIN_$",
       "Type": "String"
+    },
+    "PSubnetIds": {
+      "Description": "Subnet IDs",
+      "Default": "subnet-23e73349,subnet-568e8d2b,subnet-c8e7f185",
+      "Type": "List<AWS::EC2::Subnet::Id>"
     },
     "SourceCodeS3Bucket": {
       "Type": "String",
@@ -30,22 +35,6 @@
     "IamRoleLambda": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole"
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com"
-                ]
-              }
-            }
-          ],
-          "Version": "2012-10-17"
-        },
         "Path": "/",
         "Policies": [
           {
@@ -81,7 +70,12 @@
                     "dynamodb:GetItem",
                     "dynamodb:UpdateItem"
                   ],
-                  "Resource": "arn:aws:dynamodb:*:*:*"
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "DynamoDBTable",
+                      "Arn"
+                    ]
+                  }
                 }
               ]
             }
@@ -104,6 +98,24 @@
               ]
             }
           }
+        ],
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
         ]
       }
     },
@@ -199,6 +211,16 @@
         },
         "Runtime": "python2.7",
         "Timeout": 3,
+        "VpcConfig": {
+          "SubnetIds": {
+            "Ref": "PSubnetIds"
+          },
+          "SecurityGroupIds": [
+            {
+              "Fn::GetAtt": "LambdaHandlerSecurityGroup.GroupId"
+            }
+          ]
+        },
         "Environment": {
           "Variables": {
             "SNS_TOPIC_ARN": {
@@ -239,9 +261,17 @@
     "RDSInstance": {
       "Type": "AWS::RDS::DBInstance",
       "Properties": {
+        "VPCSecurityGroups": [
+          {
+            "Fn::GetAtt": "RDSSecurityGroup.GroupId"
+          }
+        ],
+        "DBSubnetGroupName": {
+          "Ref": "RDSSubnetGroup"
+        },
         "AllocatedStorage": "5",
         "DBInstanceClass": "db.t2.micro",
-        "Engine": "MySQL",
+        "Engine": "postgres",
         "MasterUsername": {
           "Ref": "RDSUsername"
         },
@@ -250,6 +280,41 @@
         },
         "DBName": {
           "Ref": "RDSDbName"
+        }
+      },
+      "DeletionPolicy": "Delete"
+    },
+    "RDSSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Ingress for RDS Instance",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "5432",
+            "ToPort": "5432",
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [
+                "LambdaHandlerSecurityGroup",
+                "GroupId"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "LambdaHandlerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "SecurityGroup for Lambda"
+      }
+    },
+    "RDSSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "RDS Subnet Group",
+        "SubnetIds": {
+          "Ref": "PSubnetIds"
         }
       }
     },
@@ -289,6 +354,53 @@
           {
             "Endpoint": "Serhii_Sych@epam.com",
             "Protocol": "email"
+          }
+        ]
+      }
+    },
+    "SNSEndpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "SecurityGroupIds": [
+          {
+            "Fn::GetAtt": "SNSEndpointSecurityGroup.GroupId"
+          }
+        ],
+        "PrivateDnsEnabled": true,
+        "ServiceName": {
+          "Fn::Join": [
+            "",
+            [
+              "com.amazonaws.",
+              {
+                "Ref": "AWS::Region"
+              },
+              ".sns"
+            ]
+          ]
+        },
+        "SubnetIds": {
+          "Ref": "PSubnetIds"
+        },
+        "VpcEndpointType": "Interface",
+        "VpcId": "vpc-5cbd5136"
+      }
+    },
+    "SNSEndpointSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "SecurityGroup for SNS endpoint",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 0,
+            "ToPort": 65535,
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [
+                "LambdaHandlerSecurityGroup",
+                "GroupId"
+              ]
+            }
           }
         ]
       }
