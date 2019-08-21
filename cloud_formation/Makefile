@@ -32,4 +32,4 @@ push_lambda:
 
 create_stack:
 	aws cloudformation create-stack --stack-name ${stack_name} \
-	--template-body file://./templates/${template} --capabilities CAPABILITY_IAM
+	--template-body file://./${template} --capabilities CAPABILITY_IAM
