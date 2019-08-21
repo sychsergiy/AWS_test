@@ -1,4 +1,5 @@
 venv
+windows_venv
 .idea
 .env
 package

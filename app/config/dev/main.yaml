@@ -1,0 +1,4 @@
+template_path: main.json
+parameters:
+  SourceCodeS3BucketKey: aws.cloudformation.test
+  SourceCodeS3Bucket: dev_function.zip
