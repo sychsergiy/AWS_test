@@ -29,6 +29,11 @@
       "Type": "String",
       "Default": "function.zip",
       "Description": "Path to code in S3 bucket"
+    },
+    "VpcId": {
+      "Type": "String",
+      "Default": "vpc-5cbd5136",
+      "Description": "VPC id"
     }
   },
   "Resources": {
@@ -383,7 +388,7 @@
           "Ref": "PSubnetIds"
         },
         "VpcEndpointType": "Interface",
-        "VpcId": "vpc-5cbd5136"
+        "VpcId": {"Ref":  "VpcId"}
       }
     },
     "SNSEndpointSecurityGroup": {
@@ -403,6 +408,28 @@
             }
           }
         ]
+      }
+    },
+    "DynamoDBEndpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "ServiceName": {
+          "Fn::Join": [
+            "",
+            [
+              "com.amazonaws.",
+              {
+                "Ref": "AWS::Region"
+              },
+              ".dynamodb"
+            ]
+          ]
+        },
+        "RouteTableIds": [
+          "rtb-32640258"
+        ],
+        "VpcEndpointType": "Gateway",
+        "VpcId": {"Ref":  "VpcId"}
       }
     }
   }
