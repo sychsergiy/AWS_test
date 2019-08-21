@@ -1,24 +1,16 @@
-from troposphere import (
-    iam
-)
+from troposphere import iam
 
 sns_publish_policy = iam.Policy(
     PolicyName="SNSPublish",
     PolicyDocument={
         "Statement": [
             {
-                "Action": [
-                    "sns:Publish"
-                ],
-                "Resource": [
-                    {
-                        "Ref": "EmailsSNSTopic"  # todo: change on tropo object
-                    }
-                ],
-                "Effect": "Allow"
+                "Action": ["sns:Publish"],
+                "Resource": [{"Ref": "EmailsSNSTopic"}],  # todo: change on tropo object
+                "Effect": "Allow",
             }
         ]
-    }
+    },
 )
 
 dynamodb_read_write_policy = iam.Policy(
@@ -33,17 +25,17 @@ dynamodb_read_write_policy = iam.Policy(
                     "dynamodb:PutItem",
                     "dynamodb:DeleteItem",
                     "dynamodb:GetItem",
-                    "dynamodb:UpdateItem"
+                    "dynamodb:UpdateItem",
                 ],
                 "Resource": {
                     "Fn::GetAtt": [
                         "DynamoDBTable",  # todo: change on tropo object
-                        "Arn"
+                        "Arn",
                     ]
-                }
+                },
             }
         ]
-    }
+    },
 )
 
 cloud_watch_logs_policy = iam.Policy(
@@ -55,15 +47,13 @@ cloud_watch_logs_policy = iam.Policy(
                     "logs:CreateLogGroup",
                     "logs:CreateLogStream",
                     "logs:GetLogEvents",
-                    "logs:PutLogEvents"
+                    "logs:PutLogEvents",
                 ],
-                "Resource": [
-                    "arn:aws:logs:*:*:*"
-                ],
-                "Effect": "Allow"
+                "Resource": ["arn:aws:logs:*:*:*"],
+                "Effect": "Allow",
             }
         ]
-    }
+    },
 )
 
 lambda_handler_role = iam.Role(
@@ -73,19 +63,13 @@ lambda_handler_role = iam.Role(
     AssumeRolePolicyDocument={
         "Statement": [
             {
-                "Action": [
-                    "sts:AssumeRole"
-                ],
+                "Action": ["sts:AssumeRole"],
                 "Effect": "Allow",
-                "Principal": {
-                    "Service": [
-                        "lambda.amazonaws.com"
-                    ]
-                }
+                "Principal": {"Service": ["lambda.amazonaws.com"]},
             }
         ]
     },
     ManagedPolicyArns=[
         "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-    ]
+    ],
 )

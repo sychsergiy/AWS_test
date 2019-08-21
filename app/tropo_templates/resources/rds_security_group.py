@@ -1,7 +1,4 @@
-from troposphere import (
-    ec2,
-    GetAtt,
-)
+from troposphere import ec2, GetAtt
 
 from resources.lambda_security_group import lambda_security_group
 
@@ -14,7 +11,7 @@ rds_security_group = ec2.SecurityGroup(
             IpProtocol="tcp",
             FromPort=5432,
             ToPort=5432,
-            SourceSecurityGroupId=GetAtt(lambda_security_group, "GroupId")
+            SourceSecurityGroupId=GetAtt(lambda_security_group, "GroupId"),
         )
-    ]
+    ],
 )

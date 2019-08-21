@@ -1,8 +1,5 @@
-from troposphere import (
-    ec2
-)
+from troposphere import ec2
 
 lambda_security_group = ec2.SecurityGroup(
-    "LambdaSecurityGroup",
-    GroupDescription="SecurityGroup for LambdaHandler"
+    "LambdaSecurityGroup", GroupDescription="SecurityGroup for LambdaHandler"
 )

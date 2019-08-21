@@ -1,22 +1,13 @@
-from troposphere import (
-    rds,
-    Ref,
-    GetAtt,
-)
+from troposphere import rds, Ref, GetAtt
 
-from parameters import (
-    subnet_ids,
-    rds_master_password,
-    rds_master_username,
-    rds_db_name,
-)
+from parameters import subnet_ids, rds_master_password, rds_master_username, rds_db_name
 
 from resources.rds_security_group import rds_security_group
 
 rds_subnet_group = rds.DBSubnetGroup(
     "RDSSubnetGroup",
     DBSubnetGroupDescription="RDS Subnet's Group",
-    SubnetIds=Ref(subnet_ids)
+    SubnetIds=Ref(subnet_ids),
 )
 
 rds_instance = rds.DBInstance(

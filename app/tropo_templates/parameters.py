@@ -1,6 +1,4 @@
-from troposphere import (
-    Parameter
-)
+from troposphere import Parameter
 
 # General params
 subnet_ids = Parameter(
@@ -22,7 +20,7 @@ source_code_s3_bucket_key = Parameter(
     "SourceCodeS3BucketKey",
     Description="Path to file with lambda deployment package",
     Type="String",
-    Default="function.zip"  # todo: add environment prefix
+    Default="function.zip",  # todo: add environment prefix
 )
 
 lambda_handler_function_name = Parameter(
@@ -41,15 +39,9 @@ rds_db_name = Parameter(
 )
 
 rds_master_username = Parameter(
-    "RDSMasterUsername",
-    Description="Root username",
-    Type="String",
-    Default="root",
+    "RDSMasterUsername", Description="Root username", Type="String", Default="root"
 )
 
 rds_master_password = Parameter(
-    "RDSMasterPassword",
-    Description="Root password",
-    Type="String",
-    Default="rootroot",
+    "RDSMasterPassword", Description="Root password", Type="String", Default="rootroot"
 )

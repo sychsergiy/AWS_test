@@ -1,7 +1,4 @@
-from troposphere import (
-    sns,
-    Ref
-)
+from troposphere import sns, Ref
 
 from resources.bucket_updates_topic import bucket_updates_topic
 
@@ -12,13 +9,11 @@ bucket_updates_topic_policy = sns.TopicPolicy(
         "Statement": [
             {
                 "Effect": "Allow",
-                "Principal": {
-                    "Service": "s3.amazonaws.com"
-                },
+                "Principal": {"Service": "s3.amazonaws.com"},
                 "Action": "sns:Publish",
-                "Resource": "*"
+                "Resource": "*",
             }
-        ]
+        ],
     },
-    Topics=[Ref(bucket_updates_topic)]
+    Topics=[Ref(bucket_updates_topic)],
 )

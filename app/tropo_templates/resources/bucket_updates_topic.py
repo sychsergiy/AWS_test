@@ -1,7 +1,3 @@
-from troposphere import (
-    sns
-)
+from troposphere import sns
 
-bucket_updates_topic = sns.Topic(
-    "BucketUpdatesTopic",
-)
+bucket_updates_topic = sns.Topic("BucketUpdatesTopic")
