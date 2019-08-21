@@ -6,7 +6,9 @@ sns_publish_policy = iam.Policy(
         "Statement": [
             {
                 "Action": ["sns:Publish"],
-                "Resource": [{"Ref": "EmailsSNSTopic"}],  # todo: change on tropo object
+                "Resource": [
+                    {"Ref": "EmailsSNSTopic"}
+                ],  # todo: change on tropo object
                 "Effect": "Allow",
             }
         ]

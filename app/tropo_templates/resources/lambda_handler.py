@@ -19,7 +19,8 @@ lambda_handler = awslambda.Function(
     Handler="lambda.handler",
     MemorySize=128,
     Code=awslambda.Code(
-        S3Bucket=Ref(source_code_s3_bucket), S3Key=Ref(source_code_s3_bucket_key)
+        S3Bucket=Ref(source_code_s3_bucket),
+        S3Key=Ref(source_code_s3_bucket_key),
     ),
     Role=GetAtt(lambda_handler_role, "Arn"),
     Runtime="python2.7",

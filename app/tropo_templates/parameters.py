@@ -30,7 +30,7 @@ lambda_handler_function_name = Parameter(
     Default="LambdaHandler",  # todo: add environment prefix
 )
 
-# RDS params =====================================================
+# RDS params
 rds_db_name = Parameter(
     "RDSDBName",
     Description="Name of database in create RDS instance",
@@ -39,9 +39,15 @@ rds_db_name = Parameter(
 )
 
 rds_master_username = Parameter(
-    "RDSMasterUsername", Description="Root username", Type="String", Default="root"
+    "RDSMasterUsername",
+    Description="Root username",
+    Type="String",
+    Default="root",
 )
 
 rds_master_password = Parameter(
-    "RDSMasterPassword", Description="Root password", Type="String", Default="rootroot"
+    "RDSMasterPassword",
+    Description="Root password",
+    Type="String",
+    Default="rootroot",
 )

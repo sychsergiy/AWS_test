@@ -11,6 +11,6 @@ rds_security_group = ec2.SecurityGroup(
             "FromPort": "5432",
             "ToPort": "5432",
             "SourceSecurityGroupId": GetAtt(lambda_security_group, "GroupId"),
-        },
+        }
     ],
 )

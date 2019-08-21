@@ -1,6 +1,11 @@
 from troposphere import rds, Ref, GetAtt
 
-from parameters import subnet_ids, rds_master_password, rds_master_username, rds_db_name
+from parameters import (
+    subnet_ids,
+    rds_master_password,
+    rds_master_username,
+    rds_db_name,
+)
 
 from resources.rds_security_group import rds_security_group
 

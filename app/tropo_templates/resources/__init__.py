@@ -10,15 +10,12 @@ from resources.s3_bucket import s3_bucket
 
 __all__ = [
     s3_bucket,
-
     bucket_updates_topic,
     bucket_updates_topic_policy,
-
     lambda_handler,
     lambda_invoke_permission,
     lambda_handler_role,
     lambda_security_group,
-
     rds_instance,
     rds_security_group,
     rds_subnet_group,
