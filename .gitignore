@@ -4,3 +4,4 @@ windows_venv
 .env
 package
 *.zip
+*.pyc

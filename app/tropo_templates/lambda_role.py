@@ -87,6 +87,3 @@ lambda_handler_role = iam.Role(
         "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
     ]
 )
-
-from pprint import pprint
-pprint(lambda_handler_role.to_dict())
