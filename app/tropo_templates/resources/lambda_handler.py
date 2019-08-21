@@ -4,9 +4,9 @@ from troposphere import (
     Ref,
 )
 
-from lambda_role import lambda_handler_role
-from lambda_security_group import lambda_security_group
-from rds_instance import rds_instance
+from resources.lambda_handler_role import lambda_handler_role
+from resources.lambda_security_group import lambda_security_group
+from resources.rds_instance import rds_instance
 
 from parameters import (
     source_code_s3_bucket,

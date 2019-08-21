@@ -11,7 +11,7 @@ from parameters import (
     rds_db_name,
 )
 
-from rds_security_group import rds_security_group
+from resources.rds_security_group import rds_security_group
 
 rds_subnet_group = rds.DBSubnetGroup(
     "RDSSubnetGroup",
