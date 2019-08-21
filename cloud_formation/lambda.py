@@ -34,8 +34,10 @@ def handler(event, context):
     )
     logger.info("DynamoDB record updated")
 
-    source_s3 = event['Records'][0]['s3']
-    source_bucket_name, updated_file_name = source_s3['bucket']['name'], source_s3['object']['key']
+    # source_s3 = event['Records'][0]['s3']
+    # source_bucket_name, updated_file_name = source_s3['bucket']['name'], source_s3['object']['key']
+    source_bucket_name, updated_file_name = "test", "test"
+    # todo: retrieve from event, now is not possible because of messaging thorough SNS instead of directly from S3
 
     with rds_connection.cursor() as cursor:
         insert_record_to_rds(cursor, source_bucket_name, updated_file_name)
