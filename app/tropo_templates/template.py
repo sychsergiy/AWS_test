@@ -17,6 +17,7 @@ from resources import (
     lambda_security_group,
     rds_instance,
     rds_security_group,
+    rds_subnet_group,
     s3_bucket,
 )
 
@@ -48,6 +49,10 @@ template = template_factory(
         lambda_security_group,
         rds_instance,
         rds_security_group,
+        rds_subnet_group,
         s3_bucket,
     ],
 )
+
+with open("tropo.yaml", "w") as f:
+    f.write(template.to_yaml())
