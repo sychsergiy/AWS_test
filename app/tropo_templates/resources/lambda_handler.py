@@ -23,8 +23,8 @@ lambda_handler = awslambda.Function(
     Handler="lambda.handler",
     MemorySize=128,
     Code=awslambda.Code(
-        S3Bucket=source_code_s3_bucket,
-        S3Key=source_code_s3_bucket_key,
+        S3Bucket=Ref(source_code_s3_bucket),
+        S3Key=Ref(source_code_s3_bucket_key),
     ),
     Role=GetAtt(lambda_handler_role, "Arn"),
     Runtime="python2.7",
@@ -35,7 +35,7 @@ lambda_handler = awslambda.Function(
             GetAtt(lambda_security_group, "GroupId")
         ]
     ),
-    Evironment=awslambda.Environment(
+    Environment=awslambda.Environment(
         Variables={
             "DB_HOST": GetAtt(rds_instance, "Endpoint.Address"),
             "DB_PORT": GetAtt(rds_instance, "Endpoint.Port"),

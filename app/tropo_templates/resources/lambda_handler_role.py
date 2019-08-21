@@ -64,7 +64,7 @@ cloud_watch_logs_policy = iam.Policy(
             }
         ]
     }
-),
+)
 
 lambda_handler_role = iam.Role(
     "LambdaHandlerRole",

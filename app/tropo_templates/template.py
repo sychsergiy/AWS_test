@@ -53,6 +53,3 @@ template = template_factory(
     ]
 )
 
-import pprint
-
-pprint.pprint(template.to_yaml())
