@@ -2,72 +2,74 @@ from troposphere import (
     iam
 )
 
+sns_publish_policy = iam.Policy(
+    PolicyName="SNSPublish",
+    PolicyDocument={
+        "Statement": [
+            {
+                "Action": [
+                    "sns:Publish"
+                ],
+                "Resource": [
+                    {
+                        "Ref": "EmailsSNSTopic"  # todo: change on tropo object
+                    }
+                ],
+                "Effect": "Allow"
+            }
+        ]
+    }
+)
+
+dynamodb_read_write_policy = iam.Policy(
+    PolicyName="DynamoDbReadWritePolicy",
+    PolicyDocument={
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "dynamodb:BatchGetItem",
+                    "dynamodb:BatchWriteItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:GetItem",
+                    "dynamodb:UpdateItem"
+                ],
+                "Resource": {
+                    "Fn::GetAtt": [
+                        "DynamoDBTable",  # todo: change on tropo object
+                        "Arn"
+                    ]
+                }
+            }
+        ]
+    }
+)
+
+cloud_watch_logs_policy = iam.Policy(
+    PolicyName="CloudwatchLogs",
+    PolicyDocument={
+        "Statement": [
+            {
+                "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:GetLogEvents",
+                    "logs:PutLogEvents"
+                ],
+                "Resource": [
+                    "arn:aws:logs:*:*:*"
+                ],
+                "Effect": "Allow"
+            }
+        ]
+    }
+),
+
 lambda_handler_role = iam.Role(
     "LambdaHandlerRole",
     Path="/",
-    Policies=[
-        iam.Policy(
-            PolicyName="CloudwatchLogs",
-            PolicyDocument={
-                "Statement": [
-                    {
-                        "Action": [
-                            "logs:CreateLogGroup",
-                            "logs:CreateLogStream",
-                            "logs:GetLogEvents",
-                            "logs:PutLogEvents"
-                        ],
-                        "Resource": [
-                            "arn:aws:logs:*:*:*"
-                        ],
-                        "Effect": "Allow"
-                    }
-                ]
-            }
-        ),
-        iam.Policy(
-            PolicyName="DynamoDbReadWritePolicy",
-            PolicyDocument={
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Action": [
-                            "dynamodb:BatchGetItem",
-                            "dynamodb:BatchWriteItem",
-                            "dynamodb:PutItem",
-                            "dynamodb:DeleteItem",
-                            "dynamodb:GetItem",
-                            "dynamodb:UpdateItem"
-                        ],
-                        "Resource": {
-                            "Fn::GetAtt": [
-                                "DynamoDBTable",
-                                "Arn"
-                            ]
-                        }
-                    }
-                ]
-            }
-        ),
-        iam.Policy(
-            PolicyName="SNSPublish",
-            PolicyDocument={
-                "Statement": [
-                    {
-                        "Action": [
-                            "sns:Publish"
-                        ],
-                        "Resource": [
-                            {
-                                "Ref": "EmailsSNSTopic"
-                            }
-                        ],
-                        "Effect": "Allow"
-                    }
-                ]
-            }
-        )
-    ],
+    Policies=[cloud_watch_logs_policy],  # todo: add other policies
     AssumeRolePolicyDocument={
         "Statement": [
             {
