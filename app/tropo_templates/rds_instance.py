@@ -1,6 +1,7 @@
 from troposphere import (
     rds,
     Ref,
+    GetAtt,
 )
 
 from parameters import (
@@ -10,16 +11,8 @@ from parameters import (
     rds_db_name,
 )
 
-# RDSInstance = {
-#     "Type": "AWS::RDS::DBInstance",
-#     "Properties": {
-#         "VPCSecurityGroups": [
-#             {
-#                 "Fn::GetAtt": "RDSSecurityGroup.GroupId"
-#             }
-#         ],
-#     },
-# }
+from rds_security_group import rds_security_group
+
 rds_subnet_group = rds.DBSubnetGroup(
     "RDSSubnetGroup",
     DBSubnetGroupDescription="RDS Subnet's Group",
@@ -28,7 +21,7 @@ rds_subnet_group = rds.DBSubnetGroup(
 
 rds_instance = rds.DBInstance(
     "RDSInstance",
-    # VPCSecurityGroups=[]
+    VPCSecurityGroups=[GetAtt(rds_security_group, "GroupId")],
     DBSubnetGroupName=Ref(rds_subnet_group),
     AllocatedStorage=5,
     DBInstancEClass="db.t2.micro",
