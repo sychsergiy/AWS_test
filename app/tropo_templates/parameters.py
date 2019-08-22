@@ -7,6 +7,12 @@ subnet_ids = Parameter(
     Type="List<AWS::EC2::Subnet::Id>",
     Default="subnet-23e73349,subnet-568e8d2b,subnet-c8e7f185",
 )
+vpc_id = Parameter(
+    "VPCId",
+    Description="VPC id",
+    Type="String",
+    Default="vpc-5cbd5136",
+)
 
 # LambdaHandler Params
 source_code_s3_bucket = Parameter(
