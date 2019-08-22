@@ -20,6 +20,7 @@ from stacks.main.resources import (
     rds_security_group,
     rds_subnet_group,
     s3_bucket,
+    dynamodb_table,
 )
 from stacks.main.outputs import (
     lambda_security_group_output
@@ -58,6 +59,7 @@ template = template_factory(
         rds_security_group,
         rds_subnet_group,
         s3_bucket,
+        dynamodb_table,
     ],
     [lambda_security_group_output, ]
 )

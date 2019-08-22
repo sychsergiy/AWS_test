@@ -1,5 +1,6 @@
 from troposphere import awslambda, GetAtt, Ref
 
+from stacks.main.resources.dynamodb_table import dynamodb_table
 from stacks.main.resources.lambda_handler_role import lambda_handler_role
 from stacks.main.resources.lambda_security_group import lambda_security_group
 from stacks.main.resources.rds_instance import rds_instance
@@ -37,7 +38,7 @@ lambda_handler = awslambda.Function(
             "DB_USER": Ref(rds_master_username),
             "DB_PASSWORD": Ref(rds_master_password),
             "SNS_TOPIC_ARN": "not yet",  # todo: add after creating SNS topic for sending emails
-            "DYNAMO_DB_TABLE_NAME": "not yet",  # todo: add after creating DynamoDB instance
+            "DYNAMO_DB_TABLE_NAME": Ref(dynamodb_table),
         }
     ),
 )

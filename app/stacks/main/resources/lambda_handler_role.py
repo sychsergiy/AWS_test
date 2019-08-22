@@ -1,4 +1,6 @@
-from troposphere import iam
+from troposphere import iam, GetAtt
+
+from stacks.main.resources.dynamodb_table import dynamodb_table
 
 sns_publish_policy = iam.Policy(
     PolicyName="SNSPublish",
@@ -29,12 +31,7 @@ dynamodb_read_write_policy = iam.Policy(
                     "dynamodb:GetItem",
                     "dynamodb:UpdateItem",
                 ],
-                "Resource": {
-                    "Fn::GetAtt": [
-                        "DynamoDBTable",  # todo: change on tropo object
-                        "Arn",
-                    ]
-                },
+                "Resource": GetAtt(dynamodb_table, "Arn"),
             }
         ]
     },
@@ -61,7 +58,7 @@ cloud_watch_logs_policy = iam.Policy(
 lambda_handler_role = iam.Role(
     "LambdaHandlerRole",
     Path="/",
-    Policies=[cloud_watch_logs_policy],  # todo: add other policies
+    Policies=[cloud_watch_logs_policy, dynamodb_read_write_policy],  # todo: add other policies
     AssumeRolePolicyDocument={
         "Statement": [
             {

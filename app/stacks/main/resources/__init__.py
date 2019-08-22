@@ -7,6 +7,7 @@ from stacks.main.resources.lambda_invoke_permission import lambda_invoke_permiss
 from stacks.main.resources.rds_instance import rds_instance, rds_subnet_group
 from stacks.main.resources.rds_security_group import rds_security_group
 from stacks.main.resources.s3_bucket import s3_bucket
+from stacks.main.resources.dynamodb_table import dynamodb_table
 
 __all__ = [
     s3_bucket,
@@ -19,4 +20,5 @@ __all__ = [
     rds_instance,
     rds_security_group,
     rds_subnet_group,
+    dynamodb_table,
 ]
