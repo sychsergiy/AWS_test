@@ -3,9 +3,9 @@ from troposphere import (
     GetAtt,
     Join, Ref)
 
-from endpoints.resources.sns_endpoint_security_group import sns_endpoint_security_group
+from stacks.endpoints.resources.sns_endpoint_security_group import sns_endpoint_security_group
 
-from parameters import subnet_ids, vpc_id
+from stacks.parameters import subnet_ids, vpc_id
 
 sns_endpoint = ec2.VPCEndpoint(
     "SNSEndpoint",

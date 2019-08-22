@@ -1,10 +1,10 @@
 from troposphere import Template
 
-from endpoints.resources.sns_endpoint_security_group import sns_endpoint_security_group
-from endpoints.resources.sns_endpoint import sns_endpoint
-from endpoints.resources.dynamodb_endpoint import dynamodb_endpoint
+from stacks.endpoints.resources.sns_endpoint_security_group import sns_endpoint_security_group
+from stacks.endpoints.resources.sns_endpoint import sns_endpoint
+from stacks.endpoints.resources.dynamodb_endpoint import dynamodb_endpoint
 
-from parameters import (
+from stacks.parameters import (
     route_tables_ids,
     vpc_id,
     subnet_ids,

@@ -1,10 +1,10 @@
 from troposphere import awslambda, GetAtt, Ref
 
-from main.resources.lambda_handler_role import lambda_handler_role
-from main.resources.lambda_security_group import lambda_security_group
-from main.resources.rds_instance import rds_instance
+from stacks.main.resources.lambda_handler_role import lambda_handler_role
+from stacks.main.resources.lambda_security_group import lambda_security_group
+from stacks.main.resources.rds_instance import rds_instance
 
-from parameters import (
+from stacks.parameters import (
     source_code_s3_bucket,
     source_code_s3_bucket_key,
     subnet_ids,

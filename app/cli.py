@@ -1,11 +1,11 @@
 import click
 
-from endpoints.stack import template as endpoints_stack_template
-from main.stack import template as main_stack_template
+from stacks.endpoints.stack import template as endpoints_stack_template
+from stacks.main.stack import template as main_stack_template
 
 
 def write_file_from_template(file_name, template):
-    path = "../templates/{}".format(file_name)
+    path = "templates/{}".format(file_name)
     with open(path, "w") as f:
         f.write(template.to_yaml())
 

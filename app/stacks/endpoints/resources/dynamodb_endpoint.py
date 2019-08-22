@@ -4,7 +4,7 @@ from troposphere import (
     Ref,
 )
 
-from parameters import route_tables_ids, vpc_id
+from stacks.parameters import route_tables_ids, vpc_id
 
 dynamodb_endpoint = ec2.VPCEndpoint(
     "DynamoDBEndpoint",

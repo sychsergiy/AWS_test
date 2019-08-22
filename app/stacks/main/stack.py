@@ -1,6 +1,6 @@
 from troposphere import Template
 
-from parameters import (
+from stacks.parameters import (
     subnet_ids,
     rds_master_password,
     rds_master_username,
@@ -9,7 +9,7 @@ from parameters import (
     source_code_s3_bucket_key,
     source_code_s3_bucket,
 )
-from main.resources import (
+from stacks.main.resources import (
     bucket_updates_topic_policy,
     bucket_updates_topic,
     lambda_handler,
@@ -21,7 +21,7 @@ from main.resources import (
     rds_subnet_group,
     s3_bucket,
 )
-from main.outputs import (
+from stacks.main.outputs import (
     lambda_security_group_output
 )
 

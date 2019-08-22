@@ -1,13 +1,13 @@
 from troposphere import rds, Ref, GetAtt
 
-from parameters import (
+from stacks.parameters import (
     subnet_ids,
     rds_master_password,
     rds_master_username,
     rds_db_name,
 )
 
-from main.resources.rds_security_group import rds_security_group
+from stacks.main.resources.rds_security_group import rds_security_group
 
 rds_subnet_group = rds.DBSubnetGroup(
     "RDSSubnetGroup",
