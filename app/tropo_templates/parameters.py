@@ -18,7 +18,7 @@ route_tables_ids = Parameter(
     "RouteTablesIds",
     Description="Route tables ids for DynamoDB endpoint",
     Type="List<AWS::EC2::RouteTable>",
-    Deafult="rtb-32640258",
+    Default="rtb-32640258",
 )
 
 # LambdaHandler Params
