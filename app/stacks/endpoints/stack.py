@@ -10,6 +10,8 @@ from stacks.parameters import (
     subnet_ids,
 )
 
+STACK_NAME = "Endpoints"
+
 
 def template_factory(parameters, resources):
     t = Template()

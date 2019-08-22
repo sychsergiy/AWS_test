@@ -2,6 +2,7 @@ import click
 
 from stacks.endpoints.stack import template as endpoints_stack_template
 from stacks.main.stack import template as main_stack_template
+from stacks.emails_push.stack import template as emails_push_stack_template
 
 
 def write_file_from_template(file_name, template):
@@ -21,6 +22,11 @@ def generate_main_stack_template():
 
 
 @cli.command()
+def generate_emails_push_stack_template():
+    write_file_from_template("emails_push.yaml", emails_push_stack_template)
+
+
+@cli.command()
 def generate_endpoints_stack_template():
     write_file_from_template("endpoints.yaml", endpoints_stack_template)
 
@@ -29,6 +35,7 @@ def generate_endpoints_stack_template():
 def generate():
     write_file_from_template("main.yaml", main_stack_template)
     write_file_from_template("endpoints.yaml", endpoints_stack_template)
+    write_file_from_template("emails_push.yaml", emails_push_stack_template)
 
 
 if __name__ == "__main__":
