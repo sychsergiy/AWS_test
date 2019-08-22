@@ -21,14 +21,19 @@ from resources import (
     rds_subnet_group,
     s3_bucket,
 )
+from main_outputs import (
+    lambda_security_group_output
+)
 
 
-def template_factory(parameters, resources):
+def template_factory(parameters, resources, outputs):
     t = Template()
     for param in parameters:
         t.add_parameter(param)
     for resource in resources:
         t.add_resource(resource)
+    for output in outputs:
+        t.add_output(output)
     return t
 
 
@@ -54,6 +59,7 @@ template = template_factory(
         rds_subnet_group,
         s3_bucket,
     ],
+    [lambda_security_group_output, ]
 )
 
 with open("tropo.yaml", "w") as f:

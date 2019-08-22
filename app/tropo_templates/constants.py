@@ -1,0 +1,2 @@
+MAIN_STACK_NAME = "Main"
+ENDPOINTS_STACK_NAME = "Endpoints"

@@ -1,4 +1,4 @@
-from troposphere import Template
+from troposphere import Template, Output
 
 from endpoints.sns_endpoint_security_group import sns_endpoint_security_group
 from endpoints.sns_endpoint import sns_endpoint
@@ -25,5 +25,5 @@ t = template_factory(
     [sns_endpoint, sns_endpoint_security_group, dynamodb_endpoint, ]
 )
 
-with open("endpoint.yaml", "w") as f:
+with open("endpoints.yaml", "w") as f:
     f.write(t.to_yaml())

@@ -1,0 +1,147 @@
+Outputs:
+  LambdaSecurityGroup:
+    Export:
+      Name: Main-LambdaSecurityGroup
+    Value: !Ref 'LambdaSecurityGroup'
+Parameters:
+  LambdaHandlerFunctionName:
+    Default: LambdaHandler
+    Description: Bucket with source code
+    Type: String
+  RDSDBName:
+    Default: aws_training
+    Description: Name of database in create RDS instance
+    Type: String
+  RDSMasterPassword:
+    Default: rootroot
+    Description: Root password
+    Type: String
+  RDSMasterUsername:
+    Default: root
+    Description: Root username
+    Type: String
+  SourceCodeS3Bucket:
+    Default: aws.cloudformation.test
+    Description: Bucket with source code
+    Type: String
+  SourceCodeS3BucketKey:
+    Default: function.zip
+    Description: Path to file with lambda deployment package
+    Type: String
+  SubnetIds:
+    Default: subnet-23e73349,subnet-568e8d2b,subnet-c8e7f185
+    Description: Subnet for RDS and Lambda
+    Type: List<AWS::EC2::Subnet::Id>
+Resources:
+  BucketUpdatesTopic:
+    Type: AWS::SNS::Topic
+  BucketUpdatesTopicPolicy:
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: sns:Publish
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Resource: '*'
+        Version: '2012-10-17'
+      Topics:
+        - !Ref 'BucketUpdatesTopic'
+    Type: AWS::SNS::TopicPolicy
+  LambdaHandler:
+    Properties:
+      Code:
+        S3Bucket: !Ref 'SourceCodeS3Bucket'
+        S3Key: !Ref 'SourceCodeS3BucketKey'
+      Description: test lambda with access to RDS, SNS, DynamoDB. Will be triggered
+        by SNS
+      Environment:
+        Variables:
+          DB_HOST: !GetAtt 'RDSInstance.Endpoint.Address'
+          DB_NAME: !Ref 'RDSDBName'
+          DB_PASSWORD: !Ref 'RDSMasterPassword'
+          DB_PORT: !GetAtt 'RDSInstance.Endpoint.Port'
+          DB_USER: !Ref 'RDSMasterUsername'
+          DYNAMO_DB_TABLE_NAME: not yet
+          SNS_TOPIC_ARN: not yet
+      Handler: lambda.handler
+      MemorySize: 128
+      Role: !GetAtt 'LambdaHandlerRole.Arn'
+      Runtime: python2.7
+      Timeout: 3
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt 'LambdaSecurityGroup.GroupId'
+        SubnetIds: !Ref 'SubnetIds'
+    Type: AWS::Lambda::Function
+  LambdaHandlerInvokePermission:
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt 'LambdaHandler.Arn'
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref 'BucketUpdatesTopic'
+    Type: AWS::Lambda::Permission
+  LambdaHandlerRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Path: /
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:GetLogEvents
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource:
+                  - arn:aws:logs:*:*:*
+          PolicyName: CloudwatchLogs
+    Type: AWS::IAM::Role
+  LambdaSecurityGroup:
+    Properties:
+      GroupDescription: SecurityGroup for LambdaHandler
+    Type: AWS::EC2::SecurityGroup
+  RDSInstance:
+    DeletionPolicy: Delete
+    Properties:
+      AllocatedStorage: 5
+      DBInstanceClass: db.t2.micro
+      DBName: !Ref 'RDSDBName'
+      DBSubnetGroupName: !Ref 'RDSSubnetGroup'
+      Engine: postgres
+      MasterUserPassword: !Ref 'RDSMasterPassword'
+      MasterUsername: !Ref 'RDSMasterUsername'
+      VPCSecurityGroups:
+        - !GetAtt 'RDSSecurityGroup.GroupId'
+    Type: AWS::RDS::DBInstance
+  RDSSecurityGroup:
+    Properties:
+      GroupDescription: Ingress for RDS Instance
+      SecurityGroupIngress:
+        - FromPort: '5432'
+          IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt 'LambdaSecurityGroup.GroupId'
+          ToPort: '5432'
+    Type: AWS::EC2::SecurityGroup
+  RDSSubnetGroup:
+    Properties:
+      DBSubnetGroupDescription: RDS Subnet's Group
+      SubnetIds: !Ref 'SubnetIds'
+    Type: AWS::RDS::DBSubnetGroup
+  S3Bucket:
+    Properties:
+      NotificationConfiguration:
+        TopicConfigurations:
+          - Event: s3:ObjectCreated:*
+            Topic: !Ref 'BucketUpdatesTopic'
+    Type: AWS::S3::Bucket
