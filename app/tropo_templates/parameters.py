@@ -17,7 +17,7 @@ vpc_id = Parameter(
 route_tables_ids = Parameter(
     "RouteTablesIds",
     Description="Route tables ids for DynamoDB endpoint",
-    Type="List<AWS::EC2::RouteTable>",
+    Type="List<AWS::EC2::RouteTable::Id>",
     Default="rtb-32640258",
 )
 
