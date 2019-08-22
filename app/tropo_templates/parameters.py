@@ -14,6 +14,13 @@ vpc_id = Parameter(
     Default="vpc-5cbd5136",
 )
 
+route_tables_ids = Parameter(
+    "RouteTablesIds",
+    Description="Route tables ids for DynamoDB endpoint",
+    Type="List<AWS::EC2::RouteTable>",
+    Deafult="rtb-32640258",
+)
+
 # LambdaHandler Params
 source_code_s3_bucket = Parameter(
     "SourceCodeS3Bucket",
