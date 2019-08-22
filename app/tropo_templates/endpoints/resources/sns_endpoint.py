@@ -3,7 +3,7 @@ from troposphere import (
     GetAtt,
     Join, Ref)
 
-from endpoints.sns_endpoint_security_group import sns_endpoint_security_group
+from endpoints.resources.sns_endpoint_security_group import sns_endpoint_security_group
 
 from parameters import subnet_ids, vpc_id
 

@@ -1,6 +1,6 @@
 from troposphere import awslambda, Ref, GetAtt
-from resources.lambda_handler import lambda_handler
-from resources.bucket_updates_topic import bucket_updates_topic
+from main.resources.lambda_handler import lambda_handler
+from main.resources.bucket_updates_topic import bucket_updates_topic
 
 lambda_invoke_permission = awslambda.Permission(
     "LambdaHandlerInvokePermission",

@@ -7,7 +7,7 @@ from parameters import (
     rds_db_name,
 )
 
-from resources.rds_security_group import rds_security_group
+from main.resources.rds_security_group import rds_security_group
 
 rds_subnet_group = rds.DBSubnetGroup(
     "RDSSubnetGroup",

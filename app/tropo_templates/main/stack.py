@@ -9,7 +9,7 @@ from parameters import (
     source_code_s3_bucket_key,
     source_code_s3_bucket,
 )
-from resources import (
+from main.resources import (
     bucket_updates_topic_policy,
     bucket_updates_topic,
     lambda_handler,
@@ -21,7 +21,7 @@ from resources import (
     rds_subnet_group,
     s3_bucket,
 )
-from main_outputs import (
+from main.outputs import (
     lambda_security_group_output
 )
 
@@ -61,6 +61,3 @@ template = template_factory(
     ],
     [lambda_security_group_output, ]
 )
-
-with open("tropo.yaml", "w") as f:
-    f.write(template.to_yaml())

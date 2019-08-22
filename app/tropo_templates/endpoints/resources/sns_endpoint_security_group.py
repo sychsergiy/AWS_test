@@ -3,7 +3,7 @@ from troposphere import (
     GetAtt,
 )
 
-from resources.lambda_security_group import lambda_security_group
+from main.resources import lambda_security_group
 
 sns_endpoint_security_group = ec2.SecurityGroup(
     "SNSEndpointSecurityGroup",

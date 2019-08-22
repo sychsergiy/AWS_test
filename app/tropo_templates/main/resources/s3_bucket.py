@@ -1,6 +1,6 @@
 from troposphere import s3, Ref
 
-from resources.bucket_updates_topic import bucket_updates_topic
+from main.resources.bucket_updates_topic import bucket_updates_topic
 
 s3_bucket = s3.Bucket(
     "S3Bucket",

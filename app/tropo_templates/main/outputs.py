@@ -5,7 +5,7 @@ from troposphere import (
 )
 
 from constants import MAIN_STACK_NAME
-from resources import lambda_security_group
+from main.resources import lambda_security_group
 
 output_name = "LambdaSecurityGroup"
 

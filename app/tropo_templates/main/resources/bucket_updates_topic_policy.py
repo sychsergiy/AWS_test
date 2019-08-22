@@ -1,6 +1,6 @@
 from troposphere import sns, Ref
 
-from resources.bucket_updates_topic import bucket_updates_topic
+from main.resources.bucket_updates_topic import bucket_updates_topic
 
 bucket_updates_topic_policy = sns.TopicPolicy(
     "BucketUpdatesTopicPolicy",

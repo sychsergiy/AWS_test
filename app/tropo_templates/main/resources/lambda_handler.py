@@ -1,8 +1,8 @@
 from troposphere import awslambda, GetAtt, Ref
 
-from resources.lambda_handler_role import lambda_handler_role
-from resources.lambda_security_group import lambda_security_group
-from resources.rds_instance import rds_instance
+from main.resources.lambda_handler_role import lambda_handler_role
+from main.resources.lambda_security_group import lambda_security_group
+from main.resources.rds_instance import rds_instance
 
 from parameters import (
     source_code_s3_bucket,
