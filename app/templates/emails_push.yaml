@@ -1,0 +1,17 @@
+Outputs:
+  EmailsSNSTopicRef:
+    Export:
+      Name: EmailsPush-EmailsSNSTopicRef
+    Value: !Ref 'EmailsSNSTopic'
+Parameters:
+  EmailAddress:
+    Default: Serhii_Sych@epam.com
+    Description: Email address to send notifications
+    Type: String
+Resources:
+  EmailsSNSTopic:
+    Properties:
+      Subscription:
+        - Endpoint: !Ref 'EmailAddress'
+          Protocol: email
+    Type: AWS::SNS::Topic

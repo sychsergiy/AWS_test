@@ -1,0 +1,48 @@
+Parameters:
+  RouteTablesIds:
+    Default: rtb-32640258
+    Description: Route tables ids for DynamoDB endpoint
+    Type: List<String>
+  SubnetIds:
+    Default: subnet-23e73349,subnet-568e8d2b,subnet-c8e7f185
+    Description: Subnet for RDS and Lambda
+    Type: List<AWS::EC2::Subnet::Id>
+  VPCId:
+    Default: vpc-5cbd5136
+    Description: VPC id
+    Type: String
+Resources:
+  DynamoDBEndpoint:
+    Properties:
+      RouteTableIds: !Ref 'RouteTablesIds'
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .dynamodb
+      VpcEndpointType: Gateway
+      VpcId: !Ref 'VPCId'
+    Type: AWS::EC2::VPCEndpoint
+  SNSEndpoint:
+    Properties:
+      PrivateDnsEnabled: 'true'
+      SecurityGroupIds:
+        - !GetAtt 'SNSEndpointSecurityGroup.GroupId'
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .sns
+      SubnetIds: !Ref 'SubnetIds'
+      VpcEndpointType: Interface
+      VpcId: !Ref 'VPCId'
+    Type: AWS::EC2::VPCEndpoint
+  SNSEndpointSecurityGroup:
+    Properties:
+      GroupDescription: SecurityGroup for SNS endpoint
+      SecurityGroupIngress:
+        - FromPort: 0
+          IpProtocol: tcp
+          SourceSecurityGroupId: !ImportValue 'Main-LambdaSecurityGroupId'
+          ToPort: 65535
+    Type: AWS::EC2::SecurityGroup
