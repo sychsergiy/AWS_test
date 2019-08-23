@@ -11,7 +11,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource("dynamodb")
-sns = boto3.resource("sns")
+sns_client = boto3.client("sns")
 
 
 def handler(event, context):
@@ -41,7 +41,7 @@ def handler(event, context):
     db.insert_record(source_bucket_name, updated_file_name)
     logger.info("SQL query executed")
 
-    sent_successfully = send_message_to_email_topic(sns, "Hello World")
+    sent_successfully = send_message_to_email_topic(sns_client, "Hello World")
     logger.info("Send email message executed")
 
     if sent_successfully:

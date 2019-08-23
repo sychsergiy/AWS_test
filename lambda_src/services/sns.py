@@ -6,9 +6,9 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def send_message_to_email_topic(sns, message):
+def send_message_to_email_topic(sns_client, message):
     try:
-        response = sns.publish(
+        response = sns_client.publish(
             TopicArn=Config.SNS_TOPIC_ARN,
             Message=message,
         )
