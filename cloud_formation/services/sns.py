@@ -1,15 +1,13 @@
-import boto3
 import logging
 
-from services.config import Config
+from config import Config
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def send_message_to_email_topic(message):
+def send_message_to_email_topic(sns, message):
     try:
-        sns = boto3.client('sns')
         response = sns.publish(
             TopicArn=Config.SNS_TOPIC_ARN,
             Message=message,
