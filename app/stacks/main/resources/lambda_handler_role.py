@@ -58,7 +58,11 @@ cloud_watch_logs_policy = iam.Policy(
 lambda_handler_role = iam.Role(
     "LambdaHandlerRole",
     Path="/",
-    Policies=[cloud_watch_logs_policy, dynamodb_read_write_policy, sns_publish_policy],
+    Policies=[
+        cloud_watch_logs_policy,
+        dynamodb_read_write_policy,
+        sns_publish_policy,
+    ],
     AssumeRolePolicyDocument={
         "Statement": [
             {

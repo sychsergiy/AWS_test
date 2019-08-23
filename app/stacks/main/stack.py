@@ -1,5 +1,3 @@
-from troposphere import Template
-
 from stacks.parameters import (
     subnet_ids,
     rds_master_password,
@@ -22,21 +20,9 @@ from stacks.main.resources import (
     s3_bucket,
     dynamodb_table,
 )
-from stacks.main.outputs import (
-    lambda_security_group_output
-)
+from stacks.main.outputs import lambda_security_group_output
 
-
-def template_factory(parameters, resources, outputs):
-    t = Template()
-    for param in parameters:
-        t.add_parameter(param)
-    for resource in resources:
-        t.add_resource(resource)
-    for output in outputs:
-        t.add_output(output)
-    return t
-
+from stacks.util import template_factory
 
 template = template_factory(
     [
@@ -61,5 +47,5 @@ template = template_factory(
         s3_bucket,
         dynamodb_table,
     ],
-    [lambda_security_group_output, ]
+    [lambda_security_group_output],
 )

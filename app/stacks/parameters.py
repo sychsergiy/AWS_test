@@ -8,10 +8,7 @@ subnet_ids = Parameter(
     Default="subnet-23e73349,subnet-568e8d2b,subnet-c8e7f185",
 )
 vpc_id = Parameter(
-    "VPCId",
-    Description="VPC id",
-    Type="String",
-    Default="vpc-5cbd5136",
+    "VPCId", Description="VPC id", Type="String", Default="vpc-5cbd5136"
 )
 
 route_tables_ids = Parameter(
