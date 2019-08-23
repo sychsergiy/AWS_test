@@ -2,15 +2,15 @@ from troposphere import iam, GetAtt
 
 from stacks.main.resources.dynamodb_table import dynamodb_table
 
+from stacks.main.import_values import emails_sns_topic
+
 sns_publish_policy = iam.Policy(
     PolicyName="SNSPublish",
     PolicyDocument={
         "Statement": [
             {
                 "Action": ["sns:Publish"],
-                "Resource": [
-                    {"Ref": "EmailsSNSTopic"}
-                ],  # todo: change on tropo object
+                "Resource": [emails_sns_topic],
                 "Effect": "Allow",
             }
         ]
@@ -58,7 +58,7 @@ cloud_watch_logs_policy = iam.Policy(
 lambda_handler_role = iam.Role(
     "LambdaHandlerRole",
     Path="/",
-    Policies=[cloud_watch_logs_policy, dynamodb_read_write_policy],  # todo: add other policies
+    Policies=[cloud_watch_logs_policy, dynamodb_read_write_policy, sns_publish_policy],
     AssumeRolePolicyDocument={
         "Statement": [
             {
