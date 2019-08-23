@@ -52,5 +52,3 @@ def handler(event, context):
         dynamo_db_table.update_record_status(
             LambdaExecutionStatuses.FAILED, lambda_name, record_id
         )
-
-    return "Success"

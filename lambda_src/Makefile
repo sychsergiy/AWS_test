@@ -5,7 +5,6 @@ ROOT = ${PWD}
 lambda_file = lambda.py
 template = template.json
 stack_name = awsFinalTest
-
 s3_bucket = aws.cloudformation.test
 
 push: build push_lambda
@@ -21,6 +20,7 @@ zip_libs:
 
 zip_lambda:
 	zip -g ${OUTPUT_ZIP_FILENAME} ${lambda_file}
+	zip -g ${OUTPUT_ZIP_FILENAME} config.py
 	zip -r9 ${ROOT}/${OUTPUT_ZIP_FILENAME} ./services && \
 	cd ${ROOT}
 
@@ -30,6 +30,3 @@ cleanup:
 push_lambda:
 	aws s3 cp ${ROOT}/${OUTPUT_ZIP_FILENAME} s3://${s3_bucket}/${OUTPUT_ZIP_FILENAME}
 
-create_stack:
-	aws cloudformation create-stack --stack-name ${stack_name} \
-	--template-body file://./${template} --capabilities CAPABILITY_IAM
