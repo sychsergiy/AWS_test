@@ -10,6 +10,7 @@ from stacks.parameters import (
 from stacks.main.resources import (
     bucket_updates_topic_policy,
     bucket_updates_topic,
+    bucket_updates_topic_subscription,
     lambda_handler,
     lambda_invoke_permission,
     lambda_handler_role,
@@ -37,6 +38,7 @@ template = template_factory(
     [
         bucket_updates_topic_policy,
         bucket_updates_topic,
+        bucket_updates_topic_subscription,
         lambda_handler,
         lambda_invoke_permission,
         lambda_handler_role,

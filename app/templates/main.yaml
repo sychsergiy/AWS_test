@@ -48,6 +48,12 @@ Resources:
       Topics:
         - !Ref 'BucketUpdatesTopic'
     Type: AWS::SNS::TopicPolicy
+  BucketUpdatesTopicSubscription:
+    Properties:
+      Endpoint: !GetAtt 'LambdaHandler.Arn'
+      Protocol: lambda
+      TopicArn: !Ref 'BucketUpdatesTopic'
+    Type: AWS::SNS::Subscription
   DynamoDBTable:
     Properties:
       AttributeDefinitions:
