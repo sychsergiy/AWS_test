@@ -64,3 +64,11 @@ rds_master_password = Parameter(
     Type="String",
     Default="rootroot",
 )
+
+# Emails push params
+email_address = Parameter(
+    "EmailAddress",
+    Description="Email address to send notifications",
+    Type="String",
+    Default="Serhii_Sych@epam.com",
+)
