@@ -28,12 +28,9 @@ class DynamoDBTable(object):
 
     def update_record_status(self, status, lambda_name, record_id):
         response = self.table.update_item(
-            Key={
-                'lambda_name': lambda_name,
-                'uuid': record_id,
-            },
+            Key={"lambda_name": lambda_name, "uuid": record_id},
             UpdateExpression="set execution_status = :r",
-            ExpressionAttributeValues={':r': status},
-            ReturnValues="UPDATED_NEW"
+            ExpressionAttributeValues={":r": status},
+            ReturnValues="UPDATED_NEW",
         )
         return response

@@ -19,18 +19,24 @@ def handler(event, context):
 
     dynamo_db_table = DynamoDBTable(dynamodb.Table(Config.DYNAMO_DB_TABLE_NAME))
 
-    _, record_id = dynamo_db_table.create_lambda_status_record(lambda_name, LambdaExecutionStatuses.INITIALIZATION)
+    _, record_id = dynamo_db_table.create_lambda_status_record(
+        lambda_name, LambdaExecutionStatuses.INITIALIZATION
+    )
     logger.info("DynamoDB record created")
 
     rds_connection = connect_to_postgres(Config)
     if not rds_connection:
-        dynamo_db_table.update_record_status(LambdaExecutionStatuses.FAILED_TO_INIT, lambda_name, record_id)
+        dynamo_db_table.update_record_status(
+            LambdaExecutionStatuses.FAILED_TO_INIT, lambda_name, record_id
+        )
         return "Failed to connect to RDS"
 
     db = PostgresDB(rds_connection)
     db.migrate()
 
-    dynamo_db_table.update_record_status(LambdaExecutionStatuses.IN_PROGRESS, lambda_name, record_id)
+    dynamo_db_table.update_record_status(
+        LambdaExecutionStatuses.IN_PROGRESS, lambda_name, record_id
+    )
     logger.info("DynamoDB record updated")
 
     # source_s3 = event['Records'][0]['s3']

@@ -27,20 +27,24 @@ class PostgresDB(object):
         with self.connection.cursor() as cursor:
             cursor.execute(
                 "INSERT INTO Record (bucket_name, updated_file_name) VALUES (%s, %s);",
-                (bucket_name, updated_file_name)
+                (bucket_name, updated_file_name),
             )
 
 
 def connect_to_postgres(config):
     try:
         connection = pg8000.connect(
-            host=config.DB_HOST, port=int(config.DB_PORT),
-            user=config.DB_USER, password=config.DB_PASSWORD,
-            database=config.DB_NAME
+            host=config.DB_HOST,
+            port=int(config.DB_PORT),
+            user=config.DB_USER,
+            password=config.DB_PASSWORD,
+            database=config.DB_NAME,
         )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
         return connection
     except pg8000.Error as e:
-        logger.error("ERROR: Unexpected error: Could not connect to MySQL instance.")
+        logger.error(
+            "ERROR: Unexpected error: Could not connect to MySQL instance."
+        )
         logger.error(e)
         return None
